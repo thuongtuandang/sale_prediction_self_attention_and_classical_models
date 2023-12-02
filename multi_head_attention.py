@@ -2,19 +2,20 @@ import torch
 import torch.nn as nn
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_size, heads, mask = True):
+    def __init__(self, input_size, batch_length, heads, mask = True):
         super().__init__()
+        # input_size is the dimension of inputs
         self.input_size = input_size
         self.mask = mask
         self.heads = heads
-        self.head_dim = input_size//heads
+        self.head_dim = self.input_size//heads
         assert(
-            self.head_dim * heads == input_size
+            self.head_dim * heads == self.input_size
         ), "Input size needs to be divisible by heads"
         self.Wq = nn.Linear(self.input_size, self.heads * self.head_dim, bias = False)
         self.Wk = nn.Linear(self.input_size, self.heads * self.head_dim, bias = False)
         self.Wv = nn.Linear(self.input_size, self.heads * self.head_dim, bias = False)
-        self.fc_out = nn.Linear(self.head_dim * heads, input_size)
+        self.fc_out = nn.Linear(self.head_dim * heads, self.input_size)
         self.dropout = nn.Dropout(p = 0.1)
 
     def create_mask(self, query_len, key_len):
@@ -31,23 +32,21 @@ class MultiHeadAttention(nn.Module):
             mask = lower_matrix + upper_matrix
             return mask
 
-    def forward(self, input):
+    def forward(self, inputs):
         
-        query = self.Wq(input)
-        key = self.Wk(input)
-        value = self.Wv(input)
-        # N is the batch size
-        N = input.shape[0]
+        query = self.Wq(inputs)
+        key = self.Wk(inputs)
+        value = self.Wv(inputs)
         value_len, key_len, query_len = value.shape[0], key.shape[0], query.shape[0]
         # Note that each matrix in each head is of shape (value_len, head_dim)
-        values = value.reshape(N, value_len, self.heads, self.head_dim)
-        keys = key.reshape(N, key_len, self.heads, self.head_dim)
-        queries = query.reshape(N, query_len, self.heads, self.head_dim)
+        values = value.reshape(value_len, self.heads, self.head_dim)
+        keys = key.reshape(key_len, self.heads, self.head_dim)
+        queries = query.reshape(query_len, self.heads, self.head_dim)
 
         # Compute the attention score
         # In the einsum, we keep two dimensions: N, h
         # and perform the multiplication of matrices QK^T = (len, head_dim) x (head_dim, len)
-        energy = torch.einsum("nqhd, nkhd -> nhqk", [queries, keys])
+        energy = torch.einsum("qhd, khd -> hqk", [queries, keys])
         if self.mask:
             # Mask_fill_ method in pytorch is a little bit strange
             # for example if we have a matrix = [[1, 2, 3, 4]]
@@ -62,12 +61,12 @@ class MultiHeadAttention(nn.Module):
              energy = energy.masked_fill_(mask == float('-inf'), float('-inf'))
              energy = energy.masked_fill_(mask == 0, float('0.0'))
 
-        attention_score = torch.nn.functional.softmax(energy/self.input_size**(1/2), dim = 3)
+        attention_score = torch.nn.functional.softmax(energy/self.input_size**(1/2), dim = 2)
         # Softmax function does not change shape
         # and the attention matrix is of the shape (len, len) (two last dim)
         # and the ein sum perform the multiplication attention x V = (len, len) x (len, head_dim)
-        weighted_sum = torch.einsum('nhql, nlhd -> nqhd', [attention_score, values]).reshape(
-             N, query_len, self.heads*self.head_dim
+        weighted_sum = torch.einsum('hql, lhd -> qhd', [attention_score, values]).reshape(
+             query_len, self.heads*self.head_dim
              )
         output = self.fc_out(weighted_sum)
         return output

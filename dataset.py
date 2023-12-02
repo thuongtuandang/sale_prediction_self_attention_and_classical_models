@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 from utils import get_season
+from sklearn.model_selection import train_test_split
 
 # For data analysis, please take a look on my notebook
 
@@ -34,6 +35,8 @@ class DataSet:
         X = df.drop('Weekly_Sales', axis = 1).values
         y = df['Weekly_Sales'].values
         return X, y
-
     
+    def train_test_split(self, X, y, test_size = 0.2, random_state = 42):
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+        return X_train, X_test, y_train, y_test
 
