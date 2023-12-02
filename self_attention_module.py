@@ -11,10 +11,11 @@ class SelfAttentionModule(nn.Module):
         super().__init__()
         self.input_size = input_size
         self.heads = heads
-        self.pos_encoding = PositionalEncoding(self.input_size)
-        self.multi_head_attention = MultiHeadAttention(self.input_size, heads, mask)
-        self.norm = NormalizedLayer(self.input_size)
-        self.linear = nn.Linear(self.input_size, 1)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.pos_encoding = PositionalEncoding(self.input_size).to(device)
+        self.multi_head_attention = MultiHeadAttention(self.input_size, heads, mask).to(device)
+        self.norm = NormalizedLayer(self.input_size).to(device).to(device)
+        self.linear = nn.Linear(self.input_size, 1).to(device)
         self.mask = mask
 
         # Define 

@@ -29,7 +29,8 @@ class MultiHeadAttention(nn.Module):
             upper_matrix.fill_diagonal_(0)
 
             mask = lower_matrix + upper_matrix
-            return mask
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            return mask.to(device)
 
     def forward(self, input):
         
@@ -47,7 +48,8 @@ class MultiHeadAttention(nn.Module):
         # Compute the attention score
         # In the einsum, we keep two dimensions: N, h
         # and perform the multiplication of matrices QK^T = (len, head_dim) x (head_dim, len)
-        energy = torch.einsum("nqhd, nkhd -> nhqk", [queries, keys])
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        energy = torch.einsum("nqhd, nkhd -> nhqk", [queries, keys]).to(device)
         if self.mask:
             # Mask_fill_ method in pytorch is a little bit strange
             # for example if we have a matrix = [[1, 2, 3, 4]]

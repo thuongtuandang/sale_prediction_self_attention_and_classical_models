@@ -22,7 +22,8 @@ class PositionalEncoding(nn.Module):
         d = input_size
         position = torch.arange(1).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d, 2) * (-math.log(10000.0) / d))
-        pe = torch.zeros(1, d)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        pe = torch.zeros(1, d).to(device)
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         self.pe = pe
