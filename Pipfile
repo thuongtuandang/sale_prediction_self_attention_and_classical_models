@@ -11,6 +11,7 @@ seaborn = "*"
 scikit-learn = "*"
 category-encoders = "*"
 xgboost = "*"
+lightning = "*"
 
 [dev-packages]
 
