@@ -10,8 +10,7 @@ class NormalizedLayer(nn.Module):
     
     def forward(self, input, self_attention_output):
         input_norm = input + self_attention_output
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.norm = nn.LayerNorm(normalized_shape=(1,self.input_size)).to(device)
+        self.norm = nn.LayerNorm(normalized_shape=(1,self.input_size))
         normalized_input_norm = self.norm(input_norm)
         output = self.dropout(self.norm(normalized_input_norm))
         return output
