@@ -14,9 +14,9 @@ class NormalizedLayer(nn.Module):
     
     def forward(self, inputs, self_attention_output):
         input_norm = inputs + self_attention_output
-        # Note that the input for nn.Layernorm is of shape [*, 1, input_size]
+        # Note that the input for nn.Layernorm is of shape [*, batch_length, input_size]
         # so we need to reshape the input_norm to shape [batch_length, 1, input_size]
-        input_norm = input_norm.view(-1, 1, self.input_size)
+        # input_norm = input_norm.view(-1, 1, self.input_size)
         normalized_input_norm = self.norm(input_norm)
         output = self.dropout(normalized_input_norm)
         return output

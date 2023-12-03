@@ -54,7 +54,36 @@ class SelfAttentionModule(nn.Module):
             RMSELoss = np.sqrt(MSELoss/X.shape[0])
             if i%print_period == 0:
                 print(f'Step: {i}')
-                print(f"RMSE loss: {RMSELoss}")
+                print(f"RMSE loss in log space for training set: {RMSELoss}")
     
     def predict(self, X, y):
-        pass
+        MSELoss = 0
+        MSELoss_log = 0
+        test_results = []
+        
+        test_criterion = nn.MSELoss()
+        test_criterion_log = nn.MSELoss()
+
+        n_iter = int(X.shape[0]/self.batch_length)
+        for i in range(n_iter):
+            x = X[i*self.batch_length:(i+1)*self.batch_length]
+            y_true = y[i*self.batch_length:(i+1)*self.batch_length]
+
+            # Note that y_pred is in log space
+            y_pred = self.forward(x).squeeze()
+            y_pred_exp = torch.exp(y_pred)
+            loss = test_criterion(y_pred_exp, y_true)
+            MSELoss += loss.item()
+            
+            # Loss in log space
+            y_true_log = torch.log(y_true)
+            loss_log = test_criterion_log(y_pred, y_true_log)
+            MSELoss_log += loss_log.item()
+            # This is to print or to plot
+            test_results.append(y_pred_exp)
+
+        RMSELoss = np.sqrt(MSELoss/X.shape[0])
+        RMSELoss_Log = np.sqrt(MSELoss_log/X.shape[0])
+        print(f"RMSE loss in log space for test set: {RMSELoss_Log}")
+        print(f"RMSE loss for test set: {RMSELoss}")
+        return test_results
