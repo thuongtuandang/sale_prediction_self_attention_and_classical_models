@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 DATA_PATH = 'data/Walmart.csv'
-batch_length = 64
+batch_length = 128
 
 # Load dataset
 ds = DataSet()
@@ -51,6 +51,8 @@ X_test = torch.tensor(X_test, dtype=torch.float)
 y_test = torch.tensor(y_test, dtype=torch.float)
 y_pred = SelfAttModel.predict(X_test, y_test)
 
+# Plot the results in log space
+y_test = torch.log(y_test)
 y_pred_np = y_pred[0].detach().numpy()
 for i in range(len(y_pred)-1):
     y = y_pred[i+1].detach().numpy()
@@ -59,7 +61,8 @@ for i in range(len(y_pred)-1):
 y_test = y_test.detach().numpy()
 
 plt.figure(figsize=(14, 6))
-sns.lineplot(x = range(200), y = y_test[300:500], label = 'test values', color = "b")
-sns.lineplot(x = range(200), y = y_pred_np[300:500], label = 'predicted values', color = "r")
+sns.lineplot(x = range(200), y = y_test[700:900], label = 'test values', color = "b")
+sns.lineplot(x = range(200), y = y_pred_np[700:900], label = 'predicted values', color = "r")
+plt.title('Plotting in log space')
 plt.legend()
 plt.show()

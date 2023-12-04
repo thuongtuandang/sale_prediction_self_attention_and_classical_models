@@ -80,7 +80,7 @@ class SelfAttentionModule(nn.Module):
             loss_log = test_criterion_log(y_pred, y_true_log)
             MSELoss_log += (loss_log.item() * self.batch_length)
             # This is to print or to plot
-            test_results.append(y_pred_exp)
+            test_results.append(y_pred)
 
         RMSELoss = np.sqrt(MSELoss/X.shape[0])
         RMSELoss_Log = np.sqrt(MSELoss_log/X.shape[0])
