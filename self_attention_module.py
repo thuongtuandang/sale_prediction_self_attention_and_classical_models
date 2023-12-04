@@ -73,12 +73,12 @@ class SelfAttentionModule(nn.Module):
             y_pred = self.forward(x).squeeze()
             y_pred_exp = torch.exp(y_pred)
             loss = test_criterion(y_pred_exp, y_true)
-            MSELoss += loss.item()
+            MSELoss += (loss.item() * self.batch_length)
             
             # Loss in log space
             y_true_log = torch.log(y_true)
             loss_log = test_criterion_log(y_pred, y_true_log)
-            MSELoss_log += loss_log.item()
+            MSELoss_log += (loss_log.item() * self.batch_length)
             # This is to print or to plot
             test_results.append(y_pred_exp)
 

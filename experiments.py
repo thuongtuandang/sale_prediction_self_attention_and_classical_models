@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 DATA_PATH = 'data/Walmart.csv'
-batch_length = 128
+batch_length = 64
 
 # Load dataset
 ds = DataSet()
@@ -42,7 +42,7 @@ train_loader = DataLoader(dataset=train_dataset, batch_size = batch_length)
 
 input_size = X.shape[1]
 SelfAttModel = SelfAttentionModule(heads = 2, input_size=input_size, batch_length = batch_length)
-SelfAttModel.fit(train_loader=train_loader, num_epochs=501, print_period=20, learning_rate=0.03)
+SelfAttModel.fit(train_loader=train_loader, num_epochs = 501, print_period = 20, learning_rate = 0.003)
 
 # Test step
 X_test = pad_v_stack(X_test, X_test[X_test.shape[0]-1], batch_length)
@@ -59,7 +59,7 @@ for i in range(len(y_pred)-1):
 y_test = y_test.detach().numpy()
 
 plt.figure(figsize=(14, 6))
-ax1 = sns.distplot(y_test, hist = False, color = "b")
-ax2 = sns.distplot(y_pred_np, hist = False, color = "r", ax = ax1)
+sns.lineplot(x = range(200), y = y_test[300:500], label = 'test values', color = "b")
+sns.lineplot(x = range(200), y = y_pred_np[300:500], label = 'predicted values', color = "r")
 plt.legend()
 plt.show()
