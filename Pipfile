@@ -12,6 +12,8 @@ category-encoders = "*"
 xgboost = "*"
 lightning = "*"
 seaborn = "*"
+spicy = "*"
+scipy = "*"
 
 [dev-packages]
 
