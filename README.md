@@ -6,7 +6,7 @@ The main goal of this project is to build a simple deep network using multi-head
 - Normalization layer with residual connection: We use residual connection to reduce possible noises/gradient vanishing and then normalize.
 - Linear layer: this is for producing the predicted sale values.
 
-The performance of this deep network on this dataset is not impressive, and it is unstable. There are several points I need to consider further:
+The performance of this deep network on this dataset is okay, but not impressive (see file plot_att_result.png). Note that this is multiple time series prediction and this is a difficult task in general. There are several points I need to consider further:
 - Is the architecture too simple?
 - How to capture the relationship among data better after the self-attention layer?
 - Is the dataset too small/too simple?
