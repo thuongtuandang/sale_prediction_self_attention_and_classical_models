@@ -13,7 +13,7 @@ from sklearn.model_selection import train_test_split
 
 DATA_PATH = 'data/Walmart.csv'
 input_chunk = 4
-store_number = 7
+store_number = 5
 
 # Load dataset
 ds = DataSet()
