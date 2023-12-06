@@ -20,9 +20,9 @@ class SelfAttentionModule(nn.Module):
         self.mask = mask
     
     def forward(self, inputs):
-        pos = self.pos_encoding.forward(inputs)
-        att = self.multi_head_attention.forward(pos)
-        norm_att = self.norm.forward(pos, att)
+        # pos = self.pos_encoding.forward(inputs)
+        att = self.multi_head_attention.forward(inputs)
+        norm_att = self.norm.forward(inputs, att)
         output = self.linear(norm_att)
         return output
     

@@ -24,9 +24,12 @@ num_features = ['Temperature', 'Fuel_Price', 'CPI', 'Unemployment']
 sc = StandardScaler()
 df[num_features] = sc.fit_transform(df[num_features])
 
+# Train, test split
+train_df, test_df = ds.train_test_split(df, test_size=0.2, random_state=42)
+
 # Create X, y
-X, y = ds.create_X_y(df)
-X_train, X_test, y_train, y_test = ds.train_test_split(X, y)
+X_train, y_train = ds.create_X_y(train_df)
+X_test, y_test = ds.create_X_y(test_df)
 
 # Log transform y_train
 y_train = np.log(y_train)
@@ -35,18 +38,19 @@ y_train = np.log(y_train)
 X_train = pad_v_stack(X_train, X_train[X_train.shape[0] - 1], batch_length)
 y_train = pad_h_stack(y_train, y_train[y_train.shape[0] - 1], batch_length)
 
-
 # Train step
+X_train = X_train.astype(np.float16)
 train_dataset = CustomDataset(X_train, y_train)
 train_loader = DataLoader(dataset=train_dataset, batch_size = batch_length)
 
-input_size = X.shape[1]
-SelfAttModel = SelfAttentionModule(heads = 2, input_size=input_size, batch_length = batch_length)
-SelfAttModel.fit(train_loader=train_loader, num_epochs = 501, print_period = 20, learning_rate = 0.003)
+input_size = X_train.shape[1]
+SelfAttModel = SelfAttentionModule(heads = 5, input_size=input_size, batch_length = batch_length)
+SelfAttModel.fit(train_loader=train_loader, num_epochs = 301, print_period = 20, learning_rate = 0.01)
 
 # Test step
 X_test = pad_v_stack(X_test, X_test[X_test.shape[0]-1], batch_length)
 y_test = pad_h_stack(y_test, y_test[y_test.shape[0]-1], batch_length)
+X_test = X_test.astype(np.float16)
 X_test = torch.tensor(X_test, dtype=torch.float)
 y_test = torch.tensor(y_test, dtype=torch.float)
 y_pred = SelfAttModel.predict(X_test, y_test)
@@ -61,8 +65,8 @@ for i in range(len(y_pred)-1):
 y_test = y_test.detach().numpy()
 
 plt.figure(figsize=(14, 6))
-sns.lineplot(x = range(200), y = y_test[700:900], label = 'test values', color = "b")
-sns.lineplot(x = range(200), y = y_pred_np[700:900], label = 'predicted values', color = "r")
+sns.lineplot(x = range(200), y = y_test[300:500], label = 'test values', color = "b")
+sns.lineplot(x = range(200), y = y_pred_np[300:500], label = 'predicted values', color = "r")
 plt.title('Plotting in log space')
 plt.legend()
 plt.show()
