@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 class MultiHeadAttention(nn.Module):
-    def __init__(self, input_size, batch_length, heads, mask = True):
+    def __init__(self, input_size, input_length, heads, mask = True):
         super().__init__()
         # input_size is the dimension of inputs
         self.input_size = input_size
@@ -32,8 +32,7 @@ class MultiHeadAttention(nn.Module):
             mask = lower_matrix + upper_matrix
             return mask
 
-    def forward(self, inputs):
-        
+    def forward(self, inputs):  
         query = self.Wq(inputs)
         key = self.Wk(inputs)
         value = self.Wv(inputs)

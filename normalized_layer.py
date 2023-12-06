@@ -3,12 +3,12 @@ import torch.nn as nn
 from multi_head_attention import MultiHeadAttention
 
 class NormalizedLayer(nn.Module):
-    def __init__(self, input_size, batch_length):
+    def __init__(self, input_size, input_length):
         super().__init__()
         # input_size is the dimension of input
         self.input_size = input_size
         # N is the batch size
-        N = batch_length
+        N = input_length
         self.dropout = nn.Dropout(p=0.1)
         self.norm = nn.LayerNorm(normalized_shape=(N,self.input_size))
     

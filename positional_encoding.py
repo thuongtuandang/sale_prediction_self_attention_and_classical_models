@@ -4,10 +4,10 @@ import math
 
 class PositionalEncoding(nn.Module):
     # Positional encoding for the whole batch
-    def __init__(self, input_size, batch_length):
+    def __init__(self, input_size, input_length):
         super().__init__()
         self.dropout = nn.Dropout(p=0.1)
-        iter = batch_length
+        iter = input_length
         d = input_size
         position = torch.arange(iter).unsqueeze(1)
         div_term = torch.exp(torch.arange(0, d, 2) * (-math.log(10000.0) / d))
