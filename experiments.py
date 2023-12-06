@@ -12,8 +12,8 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 
 DATA_PATH = 'data/Walmart.csv'
-input_chunk = 8
-store_number = 1
+input_chunk = 4
+store_number = 7
 
 # Load dataset
 ds = DataSet()
@@ -42,7 +42,7 @@ y_test = torch.tensor(y_test, dtype=torch.float, requires_grad=False)
 # Train step
 input_size = X_train.shape[2]
 SelfAttModel = SelfAttentionModule(heads = 1, input_size = input_size, input_length = input_chunk, mask = True)
-SelfAttModel.fit(X_train, y_train, num_epochs = 201, print_period = 20, learning_rate = 0.03)
+SelfAttModel.fit(X_train, y_train, num_epochs = 201, print_period = 20, learning_rate = 0.015)
 
 # Test step
 y_pred = SelfAttModel.predict(X_test, y_test)
