@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 DATA_PATH = 'data/Walmart.csv'
-batch_length = 128
+batch_length = 256
 
 # Load dataset
 ds = DataSet()
@@ -44,8 +44,8 @@ train_dataset = CustomDataset(X_train, y_train)
 train_loader = DataLoader(dataset=train_dataset, batch_size = batch_length)
 
 input_size = X_train.shape[1]
-SelfAttModel = SelfAttentionModule(heads = 5, input_size=input_size, batch_length = batch_length)
-SelfAttModel.fit(train_loader=train_loader, num_epochs = 301, print_period = 20, learning_rate = 0.01)
+SelfAttModel = SelfAttentionModule(heads = 5, input_size=input_size, batch_length = batch_length, mask = True)
+SelfAttModel.fit(train_loader=train_loader, num_epochs = 1001, print_period = 20, learning_rate = 0.001)
 
 # Test step
 X_test = pad_v_stack(X_test, X_test[X_test.shape[0]-1], batch_length)
