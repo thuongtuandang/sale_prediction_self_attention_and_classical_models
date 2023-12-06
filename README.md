@@ -7,7 +7,7 @@ The main goal of this project is to build a simple deep network using multi-head
 - Normalization layer with residual connection: We use residual connection to reduce possible noises/gradient vanishing and then normalize.
 - Linear layer: this is for producing the predicted sale values.
 
-Also, because it is a multiple time series problem, I divide them into prediction for a certain store. In codes, I predict the current weekly sales of store 1 according to the sales of the 4 previous week. Best score so far is 95000 RMSE loss for one store. Let me convert this into python codes for 45 stores.
+Also, because it is a multiple time series problem, I divide them into prediction for a certain store. In codes, I predict the current weekly sales of store 1 according to the sales of the 4 previous week. Best score so far is 95000 RMSE loss for one store (See file RMSE_loss_store_1.png). Let me convert this into python codes for 45 stores.
 
 # Python codes
 RMSE_store_1 = 95000
