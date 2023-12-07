@@ -8,7 +8,7 @@ The main goal of this project is to build a simple deep network using multi-head
 - Linear layer: this is an intermediate step to produce the output.
 - Output: I use the output from the linear layer and the (trained) attention weights from the multi-head self-attention layer to compute the final sales value.
 
-Here is how I preprocess the data: we will use the sales of previous weeks to predict the sale of the next week. You can change this number in the codes, I set it as input_chunk = 4, i.e. we will use the sales of 4 previous week to predict the sales of next week. Note that this is a multiple time series prediction, so a pair (X, y) must belong to the same store. After that, we can divide (X, y) to train and test set and shuffle them.
+Here is how I preprocess the data: we will use the sales of previous weeks to predict the sale of the next week. You can change this number in the codes, I set it as input_chunk = 4, i.e. we will use the sales of 4 previous week to predict the sales of next week. Note that this is a multiple time series prediction, so a pair (X, y) must belong to the same store with time order. After that, we can divide (X, y) to train and test set and shuffle them.
 
 The performance is not impressive, but it is acceptable. You can see the training in the file training_steps.png. Best result so far is RMSE loss for training set around 280k and for test set 430k (see two files results.png and plotting_430k_lost.png), because of the following reasons:
 
