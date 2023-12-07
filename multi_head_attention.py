@@ -68,7 +68,7 @@ class MultiHeadAttention(nn.Module):
              query_len, self.heads*self.head_dim
              )
         output = self.fc_out(weighted_sum)
-        return output
+        return output, attention_score
 
             
 

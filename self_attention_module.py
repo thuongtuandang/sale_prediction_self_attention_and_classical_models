@@ -11,24 +11,28 @@ class SelfAttentionModule(nn.Module):
         super().__init__()
         # input_size is the dimension of inputs
         self.input_size = input_size
-        self.batch_length = input_length
+        self.input_length = input_length
         self.heads = heads
-        self.pos_encoding = PositionalEncoding(self.input_size, self.batch_length)
+        self.pos_encoding = PositionalEncoding(input_size, input_length)
         self.multi_head_attention = MultiHeadAttention(input_size, input_length, heads, mask)
-        self.norm = NormalizedLayer(self.input_size, input_length)
-        self.linear = nn.Linear(self.input_size, 1)
+        self.norm = NormalizedLayer(input_size, input_length)
+        self.linear = nn.Linear(input_size, 1)
         self.mask = mask
     
     def forward(self, inputs):
         pos = self.pos_encoding.forward(inputs)
-        att = self.multi_head_attention.forward(pos)
+        att, self.attention_score = self.multi_head_attention.forward(pos)
         norm_att = self.norm.forward(inputs, att)
         output = self.linear(norm_att)
         return output
     
     def process(self, x, y):
         MSELoss = 0
-        y_pred = torch.mean(self.forward(x), dim = 0).squeeze()
+        # We will take last rows of the attention scores
+        y_hat = self.forward(x)
+        last_rows = self.attention_score[:, :-1, :]
+        result = torch.matmul(last_rows, y_hat).squeeze()
+        y_pred = torch.mean(result, dim = 0)
         loss = self.criterion(y_pred, y)
         MSELoss += loss.item()
         self.optimizer.zero_grad()
@@ -47,6 +51,8 @@ class SelfAttentionModule(nn.Module):
         self.optimizer = optim.Adam(self.parameters, lr=learning_rate)
         for i in range(num_epochs):
             MSELoss = 0
+                # X_train is now 3 dimensional
+                # y_train is now 2 dimensional
             for x, y in zip(X_train, y_train):
                 MSELoss += self.process(x, y)
             RMSELoss = np.sqrt(MSELoss/X_train.shape[0])
@@ -60,6 +66,7 @@ class SelfAttentionModule(nn.Module):
         test_criterion = nn.MSELoss()
 
         for x, y in zip(X_test, y_test):
+            # Not mean, should be the attention weights
             y_pred = torch.mean(self.forward(x), dim = 0).squeeze()
             loss = test_criterion(y_pred, y)
             MSELoss += loss.item()
@@ -68,4 +75,4 @@ class SelfAttentionModule(nn.Module):
 
         RMSELoss = np.sqrt(MSELoss/X_test.shape[0])
         print(f"RMSE loss for test set: {RMSELoss}")
-        return test_results
+        return test_results, MSELoss

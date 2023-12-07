@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import torch
 
 def get_season(month):
         if month in [12, 1, 2]:
@@ -36,3 +37,13 @@ def pad_h_stack(y, vector, batch_size):
                if (length + i) % batch_size == 0:
                     return y_copy
                y_copy = np.hstack([y_copy, vector])
+
+def reshape(X):
+     results = []
+     # X shape = (store_id, n_rows_store, input_chunk, n_features)
+     for i in range(len(X)):
+          for j in range(len(X[i])):
+               results.append(X[i][j])
+     results = np.array(results)
+     results = torch.tensor(results, dtype=torch.float)
+     return results
