@@ -5,7 +5,8 @@ The main goal of this project is to build a simple deep network using multi-head
 - Positional encoding layer: attention mechanism does not know the positions, and we have to use positional encoding.
 - Multi-head self-attention layer: This layer tells us about how the current input depends on previous inputs.
 - Normalization layer with residual connection: We use residual connection to reduce possible noises/gradient vanishing and then normalize.
-- Linear layer: this is for producing the predicted sale values.
+- Linear layer: this is an intermediate step to produce the output.
+- Output: I use the output from the linear layer and (trained) attention weights from the multi-head self-attention layer to compute the final sales value.
 
 Here is how I preprocess the data: we will use the sales of previous weeks to predict the sale of the next week. You can change this number in the codes, I set it as input_chunk = 4, i.e. we will use the sales of 4 previous week to predict the sales of next week. Note that this is a multiple time series prediction, so a pair (X, y) must belong to the same store. After that, we can divide (X, y) to train and test set and shuffle them.
 
