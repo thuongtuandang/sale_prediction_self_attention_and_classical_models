@@ -67,12 +67,16 @@ class SelfAttentionModule(nn.Module):
 
         for x, y in zip(X_test, y_test):
             # Not mean, should be the attention weights
-            y_pred = torch.mean(self.forward(x), dim = 0).squeeze()
+            y_hat = self.forward(x)
+            last_rows = self.attention_score[:, :-1, :]
+            result = torch.matmul(last_rows, y_hat).squeeze()
+            y_pred = torch.mean(result, dim = 0)
             loss = test_criterion(y_pred, y)
             MSELoss += loss.item()
             # This is to print or to plot
-            test_results.append(y_pred)
+            y_pred_lst = y_pred.detach().numpy().tolist()
+            test_results.append(y_pred_lst)
 
         RMSELoss = np.sqrt(MSELoss/X_test.shape[0])
         print(f"RMSE loss for test set: {RMSELoss}")
-        return test_results, MSELoss
+        return test_results

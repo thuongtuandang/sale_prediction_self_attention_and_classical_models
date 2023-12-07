@@ -12,7 +12,7 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 
 DATA_PATH = 'data/Walmart.csv'
-input_chunk = 16
+input_chunk = 4
 
 # Load dataset
 df_total = pd.read_csv(DATA_PATH)
@@ -57,24 +57,17 @@ y_test = torch.tensor(y_test, dtype=torch.float)
 
 input_size = X_train.shape[2]
 SelfAttModel = SelfAttentionModule(heads = 1, input_size = input_size, input_length = input_chunk, mask = True)
-# input of fit is 4 dimensional arrays
-SelfAttModel.fit(X_train, y_train, num_epochs = 21, print_period = 10, learning_rate = 0.015)
+# input of fit is 3 dimensional array for X
+SelfAttModel.fit(X_train, y_train, num_epochs = 51, print_period = 1, learning_rate = 0.03)
 
-# # Test step
-# y_pred = SelfAttModel.predict(X_test, y_test)
+# Test step and plot results
+y_pred = SelfAttModel.predict(X_test, y_test)
+y_test_lst = y_test.detach().numpy().tolist()
 
-# # Plot the results in log space
-# y_pred_np = y_pred[0].detach().numpy()
-# for i in range(len(y_pred)-1):
-#     y = y_pred[i+1].detach().numpy()
-#     y_pred_np = np.hstack([y_pred_np, y])
-
-# y_test = y_test.detach().numpy()
-
-# plt.figure(figsize=(14, 6))
-# length = len(y_pred)
-# sns.lineplot(x = range(length), y = y_test, label = 'test values', color = "b")
-# sns.lineplot(x = range(length), y = y_pred_np, label = 'predicted values', color = "r")
-# plt.title('Plotting for store 1')
-# plt.legend()
-# plt.show()
+plt.figure(figsize=(14, 6))
+length = 200
+sns.lineplot(x = range(length), y = y_test_lst[300:500], label = 'test values', color = "b")
+sns.lineplot(x = range(length), y = y_pred[300:500], label = 'predicted values', color = "r")
+plt.title('Plotting for store 1')
+plt.legend()
+plt.show()
