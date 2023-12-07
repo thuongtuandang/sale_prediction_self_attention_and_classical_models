@@ -7,44 +7,40 @@ from multi_head_attention import MultiHeadAttention
 from normalized_layer import NormalizedLayer
 
 class SelfAttentionModule(nn.Module):
-    def __init__(self, input_size, heads, mask = True):
+    def __init__(self, heads, input_size, input_length = 4, mask = True):
         super().__init__()
+        # input_size is the dimension of inputs
         self.input_size = input_size
+        self.input_length = input_length
         self.heads = heads
-        self.pos_encoding = PositionalEncoding(self.input_size)
-        self.multi_head_attention = MultiHeadAttention(self.input_size, heads, mask)
-        self.norm = NormalizedLayer(self.input_size)
-        self.linear = nn.Linear(self.input_size, 1)
+        self.pos_encoding = PositionalEncoding(input_size, input_length)
+        self.multi_head_attention = MultiHeadAttention(input_size, input_length, heads, mask)
+        self.norm = NormalizedLayer(input_size, input_length)
+        self.linear = nn.Linear(input_size, 1)
         self.mask = mask
-
-        # Define 
-        # self.multi_head_attention_params = nn.Parameter(self.multi_head_attention.parameters())
-        # self.norm_params = nn.Parameter(self.norm.parameters())
-        # self.linear_params = nn.Parameter(self.linear.parameters())
-
     
-    def forward(self, input):
-        pos = self.pos_encoding.forward(input)
-        att = self.multi_head_attention.forward(pos)
-        norm_att = self.norm.forward(pos, att)
+    def forward(self, inputs):
+        pos = self.pos_encoding.forward(inputs)
+        att, self.attention_score = self.multi_head_attention.forward(pos)
+        norm_att = self.norm.forward(inputs, att)
         output = self.linear(norm_att)
         return output
     
-    def process(self, X, y, run_backward = False):
+    def process(self, x, y):
         MSELoss = 0
-        for x, y_true in zip(X,y):
-            x = torch.tensor(x).float().unsqueeze(0)
-            y_true = torch.tensor(y_true).float()
-            y_pred = self.forward(x).squeeze()
-            loss = self.criterion(y_pred, y_true)
-            MSELoss += loss.item()
-            if run_backward:
-                self.optimizer.zero_grad()
-                loss.backward()
-                self.optimizer.step()
+        # We will take last rows of the attention scores
+        y_hat = self.forward(x)
+        last_rows = self.attention_score[:, :-1, :]
+        result = torch.matmul(last_rows, y_hat).squeeze()
+        y_pred = torch.mean(result, dim = 0)
+        loss = self.criterion(y_pred, y)
+        MSELoss += loss.item()
+        self.optimizer.zero_grad()
+        loss.backward()
+        self.optimizer.step()
         return MSELoss
 
-    def fit(self, X, y, num_epochs = 200, learning_rate = 0.01, print_period = 20):
+    def fit(self, X_train, y_train, num_epochs = 200, learning_rate = 0.01, print_period = 20):
         # Define loss and optimizer
         self.criterion = nn.MSELoss()
         self.parameters = [
@@ -54,11 +50,29 @@ class SelfAttentionModule(nn.Module):
         ]
         self.optimizer = optim.Adam(self.parameters, lr=learning_rate)
         for i in range(num_epochs):
-            MSELoss = self.process(X, y, run_backward=True)
-            RMSELoss = np.sqrt(MSELoss/X.shape[0])
+            MSELoss = 0
+                # X_train is now 3 dimensional
+                # y_train is now 2 dimensional
+            for x, y in zip(X_train, y_train):
+                MSELoss += self.process(x, y)
+            RMSELoss = np.sqrt(MSELoss/X_train.shape[0])
             if i%print_period == 0:
                 print(f'Step: {i}')
-                print(f"RMSE loss: {RMSELoss}")
+                print(f"RMSE loss for training set: {RMSELoss}")
     
-    def predict(self, X, y):
-        return self.process(X, y, run_backward=False)
+    def predict(self, X_test, y_test):
+        MSELoss = 0
+        test_results = []
+        test_criterion = nn.MSELoss()
+
+        for x, y in zip(X_test, y_test):
+            # Not mean, should be the attention weights
+            y_pred = torch.mean(self.forward(x), dim = 0).squeeze()
+            loss = test_criterion(y_pred, y)
+            MSELoss += loss.item()
+            # This is to print or to plot
+            test_results.append(y_pred)
+
+        RMSELoss = np.sqrt(MSELoss/X_test.shape[0])
+        print(f"RMSE loss for test set: {RMSELoss}")
+        return test_results, MSELoss

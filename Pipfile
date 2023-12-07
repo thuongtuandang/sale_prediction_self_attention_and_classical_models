@@ -7,11 +7,13 @@ name = "pypi"
 numpy = "*"
 pandas = "*"
 matplotlib = "*"
-seaborn = "*"
 scikit-learn = "*"
 category-encoders = "*"
 xgboost = "*"
 lightning = "*"
+seaborn = "*"
+spicy = "*"
+scipy = "*"
 
 [dev-packages]
 
