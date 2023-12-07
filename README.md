@@ -16,3 +16,5 @@ The performance is not impressive, but it is acceptable. You can see the trainin
 - I haven't used some additional features, for example: holiday or the weather of next week.
 - The processing time is slow, so I don't use many loops to adjust the input_chunk and the learning rate.
 - I didn't use GPU to speed up the training.
+
+Comments and suggestions are welcome. Thanks for reading!
