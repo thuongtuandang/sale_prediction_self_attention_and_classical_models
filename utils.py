@@ -47,3 +47,8 @@ def reshape(X):
      results = np.array(results)
      results = torch.tensor(results, dtype=torch.float)
      return results
+
+def torch_convert(lst):
+     lst1 = np.array(lst)
+     lst1 = torch.tensor(lst1, dtype = torch.float)
+     return lst1

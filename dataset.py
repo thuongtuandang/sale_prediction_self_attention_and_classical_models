@@ -32,13 +32,16 @@ class DataSet:
     
     def prepare_data(self, df, input_chunk):
         sequences = []
+        known_targets = []
         targets = []
-
+        df_copy = df.copy()
+        df_copy.drop('Weekly_Sales', axis = 1, inplace = True)
         # Extract sequences and targets using a sliding window approach
-        for i in range(len(df) - input_chunk):
-            sequence = df.iloc[i : i + input_chunk].values  # Input sequence (4 previous weeks)
-            target = df.iloc[i + input_chunk, 1]  # Target for this week
-    
+        for i in range(len(df) - input_chunk - 1):
+            sequence = df_copy.iloc[i : i + input_chunk + 1].values  # Input sequence (4 previous weeks)
+            known_target = df.iloc[i : i + input_chunk, 1].values  # Target for this week
+            target = df.iloc[i + input_chunk, 1]
             sequences.append(sequence)
+            known_targets.append(known_target)
             targets.append(target) 
-        return sequences, targets   
+        return sequences, known_targets, targets  

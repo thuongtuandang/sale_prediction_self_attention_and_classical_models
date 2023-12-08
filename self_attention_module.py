@@ -26,13 +26,15 @@ class SelfAttentionModule(nn.Module):
         output = self.linear(norm_att)
         return output
     
-    def process(self, x, y):
+    def process(self, x, yknown, y):
         MSELoss = 0
-        # We will take last rows of the attention scores
+        # Remember the output of the self-attention layer is of size
+        # (n_heads, input_chunk, n_features)
+        # and via the linear layer, we actually project it to the shape
+        # (input_chunk, 1): which tells us how the current time input_chunk
+        # depends on previous inputs
         y_hat = self.forward(x)
-        last_rows = self.attention_score[:, :-1, :]
-        result = torch.matmul(last_rows, y_hat).squeeze()
-        y_pred = torch.mean(result, dim = 0)
+        y_pred = (y_hat[:-1].reshape(1, -1) @ yknown).squeeze()/self.input_length
         loss = self.criterion(y_pred, y)
         MSELoss += loss.item()
         self.optimizer.zero_grad()
@@ -40,7 +42,7 @@ class SelfAttentionModule(nn.Module):
         self.optimizer.step()
         return MSELoss
 
-    def fit(self, X_train, y_train, num_epochs = 200, learning_rate = 0.01, print_period = 20):
+    def fit(self, X_train, yknown_train, y_train, num_epochs = 200, learning_rate = 0.01, print_period = 20):
         # Define loss and optimizer
         self.criterion = nn.MSELoss()
         self.parameters = [
@@ -53,24 +55,22 @@ class SelfAttentionModule(nn.Module):
             MSELoss = 0
                 # X_train is now 3 dimensional
                 # y_train is now 2 dimensional
-            for x, y in zip(X_train, y_train):
-                MSELoss += self.process(x, y)
+            for x, yknown, y in zip(X_train, yknown_train, y_train):
+                MSELoss += self.process(x, yknown, y)
             RMSELoss = np.sqrt(MSELoss/X_train.shape[0])
             if i%print_period == 0:
                 print(f'Step: {i}')
                 print(f"RMSE loss for training set: {RMSELoss}")
     
-    def predict(self, X_test, y_test):
+    def predict(self, X_test, yknown_test, y_test):
         MSELoss = 0
         test_results = []
         test_criterion = nn.MSELoss()
 
-        for x, y in zip(X_test, y_test):
+        for x, yknown, y in zip(X_test, yknown_test, y_test):
             # Not mean, should be the attention weights
             y_hat = self.forward(x)
-            last_rows = self.attention_score[:, :-1, :]
-            result = torch.matmul(last_rows, y_hat).squeeze()
-            y_pred = torch.mean(result, dim = 0)
+            y_pred = (y_hat[:-1].reshape(1, -1) @ yknown).squeeze()/self.input_length
             loss = test_criterion(y_pred, y)
             MSELoss += loss.item()
             # This is to print or to plot
